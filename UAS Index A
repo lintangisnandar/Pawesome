@@ -1,0 +1,126 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Weekend Identifier',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: WeekendIdentifierPage(),
+    );
+  }
+}
+
+class WeekendIdentifierPage extends StatefulWidget {
+  @override
+  _WeekendIdentifierPageState createState() => _WeekendIdentifierPageState();
+}
+
+class _WeekendIdentifierPageState extends State<WeekendIdentifierPage> {
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
+  List<String> _weekendDates = [];
+
+  @override
+  void dispose() {
+    _startDateController.dispose();
+    _endDateController.dispose();
+    super.dispose();
+  }
+
+  void _pickDate(BuildContext context, TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() {
+        controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
+
+  void _findWeekends() {
+    if (_startDateController.text.isEmpty || _endDateController.text.isEmpty) {
+      return;
+    }
+
+    DateTime startDate = DateTime.parse(_startDateController.text);
+    DateTime endDate = DateTime.parse(_endDateController.text);
+
+    List<String> weekendDates = [];
+    for (DateTime date = startDate; date.isBefore(endDate.add(Duration(days: 1))); date = date.add(Duration(days: 1))) {
+      if (date.weekday == DateTime.saturday || date.weekday == DateTime.sunday) {
+        weekendDates.add("${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}");
+      }
+    }
+
+    setState(() {
+      _weekendDates = weekendDates;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Weekend Identifier'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _startDateController,
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: 'Start Date',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.calendar_today),
+                  onPressed: () => _pickDate(context, _startDateController),
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: _endDateController,
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: 'End Date',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.calendar_today),
+                  onPressed: () => _pickDate(context, _endDateController),
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _findWeekends,
+              child: Text('Submit'),
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _weekendDates.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_weekendDates[index]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
