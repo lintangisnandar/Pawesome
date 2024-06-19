@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Prime Number Checker',
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+      ),
+      home: const PrimeNumberChecker(),
+    );
+  }
+}
+
+class PrimeNumberChecker extends StatefulWidget {
+  const PrimeNumberChecker({super.key});
+
+  @override
+  _PrimeNumberCheckerState createState() => _PrimeNumberCheckerState();
+}
+
+class _PrimeNumberCheckerState extends State<PrimeNumberChecker> {
+  final TextEditingController startController = TextEditingController();
+  final TextEditingController endController = TextEditingController();
+  List<int> primeNumbers = [];
+
+  bool isPrime(int number) {
+    if (number <= 1) return false;
+    for (int i = 2; i <= number ~/ 2; i++) {
+      if (number % i == 0) return false;
+    }
+    return true;
+  }
+
+  void findPrimeNumbers(int start, int end) {
+    primeNumbers.clear();
+    for (int i = start; i <= end; i++) {
+      if (isPrime(i)) {
+        primeNumbers.add(i);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Prime Number Checker'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: startController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Start Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: endController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'End Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                int start = int.tryParse(startController.text) ?? 0;
+                int end = int.tryParse(endController.text) ?? 0;
+
+                if (start > end) {
+                  // Swap start and end if start is greater than end
+                  int temp = start;
+                  start = end;
+                  end = temp;
+                }
+
+                setState(() {
+                  findPrimeNumbers(start, end);
+                });
+              },
+              child: const Text('Submit'),
+            ),
+            const SizedBox(height: 20),
+            primeNumbers.isEmpty
+                ? const Text('No prime numbers found in the given range.')
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: primeNumbers.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(primeNumbers[index].toString()),
+                        );
+                      },
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    startController.dispose();
+    endController.dispose();
+    super.dispose();
+  }
+}
